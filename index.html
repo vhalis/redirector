@@ -29,6 +29,12 @@
     .icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
     h1 { margin: 0 0 0.4rem; font-size: 1.3rem; font-weight: 600; }
     .subtitle { margin: 0 0 1.5rem; opacity: 0.55; font-size: 0.9rem; }
+    .countdown {
+      margin: 0 0 1rem;
+      font-size: 0.85rem;
+      color: #a6adc8;
+      min-height: 1.2em;
+    }
     .btn {
       display: inline-block;
       padding: 0.65rem 1.5rem;
@@ -65,6 +71,7 @@
     <div class="icon" id="icon">⏳</div>
     <h1 id="title">Opening…</h1>
     <p class="subtitle" id="subtitle">You should be redirected automatically.</p>
+    <p class="countdown" id="countdown" aria-live="polite"></p>
     <div id="actions"></div>
   </div>
 
@@ -75,7 +82,32 @@
     const icon     = document.getElementById("icon");
     const title    = document.getElementById("title");
     const subtitle = document.getElementById("subtitle");
+    const countdown = document.getElementById("countdown");
     const actions  = document.getElementById("actions");
+
+    function startAutoClose(seconds = 10) {
+      let remaining = seconds;
+      countdown.textContent = `This tab closes in ${remaining}s.`;
+
+      const timer = setInterval(() => {
+        remaining -= 1;
+
+        if (remaining > 0) {
+          countdown.textContent = `This tab closes in ${remaining}s.`;
+          return;
+        }
+
+        clearInterval(timer);
+        countdown.textContent = "Closing tab…";
+
+        // Browsers only allow close() for script-opened tabs/windows.
+        window.close();
+
+        setTimeout(() => {
+          countdown.textContent = "Auto-close was blocked by your browser. You can close this tab manually.";
+        }, 350);
+      }, 1000);
+    }
 
     function renderButton(appUrl, label, webUrl, webLabel) {
       const btn = document.createElement("a");
@@ -94,12 +126,14 @@
 
       // Auto-redirect; show button as fallback if it fails or is blocked
       setTimeout(() => { window.location.href = appUrl; }, 50);
+      startAutoClose(10);
     }
 
     function renderError(msg) {
       icon.textContent     = "⚠️";
       title.textContent    = "Missing parameters";
       subtitle.textContent = "";
+      countdown.textContent = "";
       actions.innerHTML    = `<p class="error">${msg}</p>`;
     }
 
