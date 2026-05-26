@@ -3,69 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; navigate-to 'self' https: obsidian: todoist:">
+  <meta name="referrer" content="no-referrer">
   <title>Opening…</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 1rem;
-      background: #1e1e2e;
-      color: #cdd6f4;
-    }
-    .card {
-      text-align: center;
-      padding: 2rem 2.5rem;
-      border-radius: 14px;
-      background: #313244;
-      box-shadow: 0 4px 28px rgba(0,0,0,0.45);
-      max-width: 420px;
-      width: 100%;
-    }
-    .icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
-    h1 { margin: 0 0 0.4rem; font-size: 1.3rem; font-weight: 600; }
-    .subtitle { margin: 0 0 1.5rem; opacity: 0.55; font-size: 0.9rem; }
-    .countdown {
-      margin: 0 0 1rem;
-      font-size: 0.85rem;
-      color: #a6adc8;
-      min-height: 1.2em;
-    }
-    .btn {
-      display: inline-block;
-      padding: 0.65rem 1.5rem;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 500;
-      text-decoration: none;
-      cursor: pointer;
-      border: none;
-      transition: opacity 0.15s;
-    }
-    .btn:hover { opacity: 0.85; }
-    .btn-primary { background: #89b4fa; color: #1e1e2e; }
-    .btn-secondary {
-      display: block;
-      margin-top: 0.75rem;
-      font-size: 0.85rem;
-      color: #89b4fa;
-      text-decoration: none;
-      opacity: 0.7;
-    }
-    .btn-secondary:hover { opacity: 1; }
-    .error { color: #f38ba8; font-size: 0.9rem; }
-    code {
-      background: #45475a;
-      padding: 0.1em 0.4em;
-      border-radius: 4px;
-      font-size: 0.85em;
-    }
-  </style>
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
   <div class="card">
@@ -76,99 +17,6 @@
     <div id="actions"></div>
   </div>
 
-  <script>
-    const params  = new URLSearchParams(window.location.search);
-    const type    = (params.get("type") || "obsidian").toLowerCase();
-
-    const icon     = document.getElementById("icon");
-    const title    = document.getElementById("title");
-    const subtitle = document.getElementById("subtitle");
-    const countdown = document.getElementById("countdown");
-    const actions  = document.getElementById("actions");
-
-    function startAutoClose(seconds = 10) {
-      let remaining = seconds;
-      countdown.textContent = `This tab closes in ${remaining}s.`;
-
-      const timer = setInterval(() => {
-        remaining -= 1;
-
-        if (remaining > 0) {
-          countdown.textContent = `This tab closes in ${remaining}s.`;
-          return;
-        }
-
-        clearInterval(timer);
-        countdown.textContent = "Closing tab…";
-
-        // Browsers only allow close() for script-opened tabs/windows.
-        window.close();
-
-        setTimeout(() => {
-          countdown.textContent = "Auto-close was blocked by your browser. You can close this tab manually.";
-        }, 350);
-      }, 1000);
-    }
-
-    function renderButton(appUrl, label, webUrl, webLabel) {
-      const btn = document.createElement("a");
-      btn.href      = appUrl;
-      btn.className = "btn btn-primary";
-      btn.textContent = label;
-      actions.appendChild(btn);
-
-      if (webUrl) {
-        const fallback = document.createElement("a");
-        fallback.href        = webUrl;
-        fallback.className   = "btn-secondary";
-        fallback.textContent = webLabel || "Open in browser instead";
-        actions.appendChild(fallback);
-      }
-
-      // Auto-redirect; show button as fallback if it fails or is blocked
-      setTimeout(() => { window.location.href = appUrl; }, 50);
-      startAutoClose(10);
-    }
-
-    function renderError(msg) {
-      icon.textContent      = "⚠️";
-      title.textContent     = "Missing parameters";
-      subtitle.textContent  = "";
-      countdown.textContent = "";
-      actions.textContent   = "";
-      const p = document.createElement("p");
-      p.className = "error";
-      p.textContent = msg;
-      actions.appendChild(p);
-    }
-
-    if (type === "obsidian") {
-      const vault = params.get("vault");
-      const file  = params.get("file");
-      if (!vault || !file) {
-        renderError("Expected \u2018vault\u2019 and \u2018file\u2019 query parameters.");
-      } else {
-        const appUrl = `obsidian://open?vault=${encodeURIComponent(vault)}&file=${encodeURIComponent(file)}`;
-        icon.textContent  = "🟣";
-        title.textContent = "Opening in Obsidian…";
-        renderButton(appUrl, "Open in Obsidian", null, null);
-      }
-
-    } else if (type === "todoist") {
-      const id = params.get("id");
-      if (!id) {
-        renderError("Expected an \u2018id\u2019 query parameter.");
-      } else {
-        const appUrl = `todoist://task?id=${encodeURIComponent(id)}`;
-        const webUrl = `https://app.todoist.com/app/task/${encodeURIComponent(id)}`;
-        icon.textContent  = "🔴";
-        title.textContent = "Opening in Todoist…";
-        renderButton(appUrl, "Open in Todoist", webUrl, "Open in browser instead");
-      }
-
-    } else {
-      renderError(`Unknown type \u201c${type}\u201d. Expected \u2018obsidian\u2019 or \u2018todoist\u2019.`);
-    }
-  </script>
+  <script src="./app.js" defer></script>
 </body>
 </html>
