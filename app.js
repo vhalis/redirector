@@ -18,8 +18,9 @@ function isReasonableText(value, maxLength = 300) {
   return !/[\u0000-\u001F<>]/.test(value);
 }
 
-function isValidTodoistId(value) {
-  return /^\d{1,20}$/.test(value || "");
+function isValidTodoistTaskRef(value) {
+  // Allow numeric ids and share-slug/token style refs while blocking separators like '/'.
+  return /^[A-Za-z0-9_-]{1,140}$/.test(value || "");
 }
 
 function startAutoClose(seconds = 10) {
@@ -74,15 +75,15 @@ function renderButton(appUrl, label, webUrl, webLabel) {
     actions.appendChild(fallback);
   }
 
-  const allowAuto = params.get("auto") === "1";
-  if (allowAuto) {
-    subtitle.textContent = "Trusted auto-redirect is enabled for this link.";
+  const manualOnly = params.get("auto") === "0";
+  if (!manualOnly) {
+    subtitle.textContent = "You should be redirected automatically.";
     setTimeout(() => {
       window.location.href = appUrl;
     }, 50);
     startAutoClose(10);
   } else {
-    subtitle.textContent = "Click to open. Auto-redirect is disabled by default for safety.";
+    subtitle.textContent = "Auto-redirect is disabled for this link. Click to open.";
     countdown.textContent = "";
   }
 }
@@ -104,11 +105,11 @@ if (!ALLOWED_TYPES.has(requestedType)) {
 } else {
   const id = params.get("id");
 
-  if (!isValidTodoistId(id)) {
-    renderError("Expected a valid numeric 'id' query parameter.", "Missing parameters");
+  if (!isValidTodoistTaskRef(id)) {
+    renderError("Expected a valid Todoist task reference in 'id'. Use letters, numbers, '_' or '-'.", "Missing parameters");
   } else {
     const appUrl = `todoist://task?id=${encodeURIComponent(id)}`;
-    const webUrl = `https://app.todoist.com/app/task/${encodeURIComponent(id)}`;
+    const webUrl = `https://todoist.com/app/task/${encodeURIComponent(id)}`;
     icon.textContent = "T";
     title.textContent = "Open in Todoist";
     renderButton(appUrl, "Open in Todoist", webUrl, "Open in browser instead");

@@ -11,26 +11,26 @@ Designed to run on GitHub Pages with client-side hardening.
 
 - Strict app allowlist: only `type=obsidian` or `type=todoist`.
 - Strict CSP via `<meta http-equiv="Content-Security-Policy">` with external JS/CSS only.
-- Auto-redirect is off by default to reduce abuse from crafted links.
-- Optional trusted auto-redirect can be enabled per-link with `auto=1`.
+- Auto-redirect is on by default.
+- Optional per-link override: set `auto=0` to disable auto-redirect and require a click.
 
 ## URL formats
 
-Obsidian (manual click by default):
+Obsidian (auto-redirect default):
 
-`/?type=obsidian&vault=MyVault&file=Notes%2FToday.md`
+`/?type=obsidian&vault=MyVault&file=Notes%2FToday`
 
-Obsidian (trusted auto-redirect):
+Obsidian (manual mode override):
 
-`/?type=obsidian&vault=MyVault&file=Notes%2FToday.md&auto=1`
+`/?type=obsidian&vault=MyVault&file=Notes%2FToday&auto=0`
 
-Todoist (manual click by default):
+Todoist (auto-redirect default):
 
-`/?type=todoist&id=1234567890`
+`/?type=todoist&id=6gj7wm4xQjgPX3Hj`
 
-Todoist (trusted auto-redirect):
+Todoist (manual mode override):
 
-`/?type=todoist&id=1234567890&auto=1`
+`/?type=todoist&id=task-slug-or-id-token&auto=0`
 
 ## Notes for GitHub Pages
 
