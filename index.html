@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
   <title>Opening…</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
@@ -76,15 +77,6 @@
   </div>
 
   <script>
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-    }
-
     const params  = new URLSearchParams(window.location.search);
     const type    = (params.get("type") || "obsidian").toLowerCase();
 
@@ -139,18 +131,22 @@
     }
 
     function renderError(msg) {
-      icon.textContent     = "⚠️";
-      title.textContent    = "Missing parameters";
-      subtitle.textContent = "";
+      icon.textContent      = "⚠️";
+      title.textContent     = "Missing parameters";
+      subtitle.textContent  = "";
       countdown.textContent = "";
-      actions.innerHTML    = `<p class="error">${msg}</p>`;
+      actions.textContent   = "";
+      const p = document.createElement("p");
+      p.className = "error";
+      p.textContent = msg;
+      actions.appendChild(p);
     }
 
     if (type === "obsidian") {
       const vault = params.get("vault");
       const file  = params.get("file");
       if (!vault || !file) {
-        renderError("Expected <code>vault</code> and <code>file</code> parameters.");
+        renderError("Expected \u2018vault\u2019 and \u2018file\u2019 query parameters.");
       } else {
         const appUrl = `obsidian://open?vault=${encodeURIComponent(vault)}&file=${encodeURIComponent(file)}`;
         icon.textContent  = "🟣";
@@ -161,7 +157,7 @@
     } else if (type === "todoist") {
       const id = params.get("id");
       if (!id) {
-        renderError("Expected an <code>id</code> parameter.");
+        renderError("Expected an \u2018id\u2019 query parameter.");
       } else {
         const appUrl = `todoist://task?id=${encodeURIComponent(id)}`;
         const webUrl = `https://app.todoist.com/app/task/${encodeURIComponent(id)}`;
@@ -171,7 +167,7 @@
       }
 
     } else {
-      renderError(`Unknown <code>type</code>: <code>${escapeHtml(type)}</code>. Expected <code>obsidian</code> or <code>todoist</code>.`);
+      renderError(`Unknown type \u201c${type}\u201d. Expected \u2018obsidian\u2019 or \u2018todoist\u2019.`);
     }
   </script>
 </body>
