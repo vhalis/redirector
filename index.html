@@ -76,6 +76,15 @@
   </div>
 
   <script>
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
     const params  = new URLSearchParams(window.location.search);
     const type    = (params.get("type") || "obsidian").toLowerCase();
 
@@ -162,7 +171,7 @@
       }
 
     } else {
-      renderError(`Unknown <code>type</code>: <code>${type}</code>. Expected <code>obsidian</code> or <code>todoist</code>.`);
+      renderError(`Unknown <code>type</code>: <code>${escapeHtml(type)}</code>. Expected <code>obsidian</code> or <code>todoist</code>.`);
     }
   </script>
 </body>
